@@ -1,4 +1,4 @@
-export function attachHandlers(ws, setTrade) {
+export default function attachHandlers(ws, setTrade) {
 
   ws.onopen = () => {
     console.log("Connected");

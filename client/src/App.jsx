@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import attachHandlers from "./utils/ws/websocket";
+// import attachHandlers from "./utils/ws/websocket";
+import { wsUrl } from "./utils/baseurl";
 
 function App() {
   const [trade1, setTrade1] = useState(null);
@@ -9,21 +10,36 @@ function App() {
   const [coin2, setCoin2] = useState("eth");
 
   useEffect(() => {
-     const ws = new WebSocket(
-    `ws://localhost:3000?coin1=${coin1}&coin2=${coin2}`
-  );
+    const ws = new WebSocket(
+      `${wsUrl}?coin1=${coin1}&coin2=${coin2}`
+    );
 
-  ws.onmessage = (event) => {
-    const data = JSON.parse(event.data);
-    if (data.coin === coin1) {
-      setTrade1(data);
-    }
-    if (data.coin === coin2) {
-      setTrade2(data);
-    }
-  };
-  return () => ws.close();
-  }, [coin1, coin2]); // ✅ both dependencies in one array
+    ws.onopen = () => {
+      console.log(`[Client WS] Connected | watching coin1="${coin1}" coin2="${coin2}"`);
+    };
+
+    ws.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+
+      // 🔍 LOG: confirm coin matching works
+      console.log(
+        `[Client WS] Received → coin: "${data.coin}" | coin1: "${coin1}" | coin2: "${coin2}"`,
+        `| match1: ${data.coin === coin1} | match2: ${data.coin === coin2}`
+      );
+
+      if (data.coin === coin1) {
+        setTrade1(data);
+      }
+      if (data.coin === coin2) {
+        setTrade2(data);
+      }
+    };
+
+    ws.onerror = (err) => console.error("[Client WS] Error:", err);
+    ws.onclose = () => console.log("[Client WS] Disconnected");
+
+    return () => ws.close();
+  }, [coin1, coin2]);
 
   const handleSubmit = (e) => e.preventDefault();
 

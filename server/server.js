@@ -2,10 +2,11 @@ import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import { WebSocketServer } from 'ws';
-
+//library imports
 import getBinanceData from './api/Binance.js';
 import ConnectWebSocket from './ws/Binance-ws.js';
-import ConnectWebSocket2 from './ws/Binance-ws.js';
+//file imports
+
 dotenv.config();
 
 const app = express();
