@@ -1,11 +1,11 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { wsUrl } from "./utils/baseurl";
+import { EXCHANGES, fetchFundingRate } from "./utils/FundingApi/exchanges";
 import "./App.css";
 
-const FUNDING_API = "https://fapi.binance.com/fapi/v1/premiumIndex";
 const POLL_MS = 5000;
 
-// ── Helpers ──────────────────────────────────────────────────────────────────
+// ── Helpers ───────────────────────────────────────────────────────────────────
 function fmtPrice(p) {
   if (!p) return "—";
   return parseFloat(p).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -32,14 +32,111 @@ function rateClass(r) {
   return parseFloat(r) >= 0 ? "positive" : "negative";
 }
 
-// ── CoinIcon ─────────────────────────────────────────────────────────────────
+// ── ExchangeIcon ──────────────────────────────────────────────────────────────
+function ExchangeIcon({ exchangeId, size = 28 }) {
+  const ex = EXCHANGES[exchangeId];
+  if (!ex) return null;
+
+  // Unique geometric icons per exchange using pure SVG shapes
+  const icons = {
+    binance: (
+      // Binance: diamond/hexagon mark
+      <svg width={size} height={size} viewBox="0 0 32 32" fill="none">
+        <polygon points="16,3 28,10 28,22 16,29 4,22 4,10" fill={ex.bgColor} stroke={ex.color} strokeWidth="1.5" />
+        <polygon points="16,9 21,13 16,17 11,13" fill={ex.color} opacity="0.9" />
+        <polygon points="16,15 21,19 16,23 11,19" fill={ex.color} opacity="0.6" />
+        <rect x="10" y="13.5" width="4" height="5" rx="1" fill={ex.color} opacity="0.5" transform="rotate(-30 12 16)" />
+        <rect x="18" y="13.5" width="4" height="5" rx="1" fill={ex.color} opacity="0.5" transform="rotate(30 20 16)" />
+      </svg>
+    ),
+    bybit: (
+      // Bybit: clean bold B lettermark
+      <svg width={size} height={size} viewBox="0 0 32 32" fill="none">
+        <rect width="32" height="32" rx="8" fill={ex.bgColor} stroke={ex.color} strokeWidth="1.5" />
+        <text x="16" y="22" textAnchor="middle" fontFamily="sans-serif" fontWeight="900" fontSize="18" fill={ex.color}>B</text>
+      </svg>
+    ),
+    blofin: (
+      // BloFin: angular crystal/gem shape
+      <svg width={size} height={size} viewBox="0 0 32 32" fill="none">
+        <polygon points="16,2 30,10 30,22 16,30 2,22 2,10" fill={ex.bgColor} stroke={ex.color} strokeWidth="1.5" />
+        <polygon points="16,8 24,13 24,19 16,24 8,19 8,13" fill={ex.color} opacity="0.25" />
+        <line x1="16" y1="8" x2="16" y2="24" stroke={ex.color} strokeWidth="1" opacity="0.6" />
+        <line x1="8" y1="13" x2="24" y2="19" stroke={ex.color} strokeWidth="1" opacity="0.4" />
+        <line x1="8" y1="19" x2="24" y2="13" stroke={ex.color} strokeWidth="1" opacity="0.4" />
+      </svg>
+    ),
+  };
+
+  return icons[exchangeId] || null;
+}
+
+// ── CoinIcon ──────────────────────────────────────────────────────────────────
 function CoinIcon({ symbol }) {
   const abbr = symbol.slice(0, 3).toUpperCase();
   const colors = { BTC: "#f7931a", ETH: "#627eea", SOL: "#9945ff", BNB: "#f3ba2f" };
   const color = colors[abbr] || "#3d8bff";
   return (
-    <div className="coin-icon" style={{ color }}>
+    <div className="coin-icon" style={{ color, borderColor: `${color}40` }}>
       {abbr}
+    </div>
+  );
+}
+
+// ── ExchangeSelect ────────────────────────────────────────────────────────────
+function ExchangeSelect({ value, onChange }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+  const current = EXCHANGES[value];
+
+  useEffect(() => {
+    const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  return (
+    <div className="exchange-select-wrap" ref={ref}>
+      <button
+        type="button"
+        className="exchange-select-trigger"
+        style={{ "--ex-color": current.color, "--ex-bg": current.bgColor, "--ex-border": current.borderColor }}
+        onClick={() => setOpen((o) => !o)}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+      >
+        <ExchangeIcon exchangeId={value} size={20} />
+        <span className="exchange-select-name">{current.name}</span>
+        <svg className={`exchange-caret ${open ? "open" : ""}`} width="12" height="12" viewBox="0 0 12 12" fill="none">
+          <path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </button>
+
+      {open && (
+        <ul className="exchange-dropdown" role="listbox">
+          {Object.values(EXCHANGES).map((ex) => (
+            <li
+              key={ex.id}
+              role="option"
+              aria-selected={ex.id === value}
+              className={`exchange-option ${ex.id === value ? "selected" : ""}`}
+              style={{ "--ex-color": ex.color, "--ex-bg": ex.bgColor }}
+              onClick={() => { onChange(ex.id); setOpen(false); }}
+            >
+              <ExchangeIcon exchangeId={ex.id} size={22} />
+              <div className="exchange-option-info">
+                <span className="exchange-option-name">{ex.name}</span>
+                <span className="exchange-option-label">{ex.label}</span>
+              </div>
+              {ex.id === value && (
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                  <path d="M2 7l4 4 6-6" stroke={ex.color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }
@@ -58,10 +155,14 @@ function LoadingSkeleton({ coin }) {
 }
 
 // ── CryptoCard ────────────────────────────────────────────────────────────────
-function CryptoCard({ coin, trade, funding, pairLabel, inputValue, onInputChange, onApply }) {
+function CryptoCard({
+  coin, trade, funding, pairLabel,
+  inputValue, onInputChange, onApply,
+  exchange, onExchangeChange,
+}) {
   const [countdown, setCountdown] = useState("—");
+  const ex = EXCHANGES[exchange];
 
-  // Live countdown ticker
   useEffect(() => {
     if (!funding?.nextFundingTime) return;
     const tick = () => setCountdown(fmtCountdown(funding.nextFundingTime));
@@ -78,7 +179,13 @@ function CryptoCard({ coin, trade, funding, pairLabel, inputValue, onInputChange
   };
 
   return (
-    <div className="crypto-card">
+    <div
+      className="crypto-card"
+      style={{ "--card-accent": ex.color, "--card-accent-bg": ex.bgColor, "--card-accent-border": ex.borderColor }}
+    >
+      {/* Top accent line matches exchange color */}
+      <div className="card-accent-line" style={{ background: `linear-gradient(90deg, transparent, ${ex.color}60, transparent)` }} />
+
       {/* Header */}
       <div className="card-header">
         <div className="coin-identity">
@@ -88,15 +195,27 @@ function CryptoCard({ coin, trade, funding, pairLabel, inputValue, onInputChange
             <div className="coin-pair">{coin.toUpperCase()}USDT · PERP</div>
           </div>
         </div>
-        <div className="live-badge">
-          <span className="live-dot" />
-          LIVE
+        <div className="header-right">
+          {/* Exchange icon badge */}
+          <div
+            className="exchange-badge"
+            style={{ background: ex.bgColor, border: `1px solid ${ex.borderColor}`, color: ex.color }}
+            title={ex.label}
+          >
+            <ExchangeIcon exchangeId={exchange} size={16} />
+            <span>{ex.name}</span>
+          </div>
+          <div className="live-badge">
+            <span className="live-dot" />
+            LIVE
+          </div>
         </div>
       </div>
 
-      {/* Coin Selector inside card */}
+      {/* Exchange + Coin Selector row */}
       <form onSubmit={handleSubmit} className="card-coin-selector">
         <label className="card-pair-label">{pairLabel}</label>
+        <ExchangeSelect value={exchange} onChange={onExchangeChange} />
         <div className="coin-input-wrap">
           <input
             type="text"
@@ -126,18 +245,23 @@ function CryptoCard({ coin, trade, funding, pairLabel, inputValue, onInputChange
 
           {/* Funding Data */}
           <div className="card-funding">
-            <div className="funding-title">Funding Data</div>
+            <div className="funding-title">
+              Funding Data
+              <span className="funding-source-tag" style={{ color: ex.color, background: ex.bgColor, border: `1px solid ${ex.borderColor}` }}>
+                via {ex.name}
+              </span>
+            </div>
             <div className="funding-grid">
               <div className="funding-item">
                 <div className="funding-item-label">Mark Price</div>
                 <div className="funding-item-value">
-                  ${fmtPrice(funding.markPrice)}
+                  {funding.markPrice ? `$${fmtPrice(funding.markPrice)}` : "—"}
                 </div>
               </div>
               <div className="funding-item">
                 <div className="funding-item-label">Index Price</div>
                 <div className="funding-item-value">
-                  ${fmtPrice(funding.indexPrice)}
+                  {funding.indexPrice ? `$${fmtPrice(funding.indexPrice)}` : "—"}
                 </div>
               </div>
               <div className="funding-item">
@@ -170,12 +294,15 @@ function App() {
   const [coin1, setCoin1] = useState("btc");
   const [coin2, setCoin2] = useState("eth");
 
+  // Per-card exchange selection
+  const [exchange1, setExchange1] = useState("binance");
+  const [exchange2, setExchange2] = useState("bybit");
+
   // ── Live price via WebSocket ──
   useEffect(() => {
     setTrade1(null);
     setTrade2(null);
     const ws = new WebSocket(`${wsUrl}?coin1=${coin1}&coin2=${coin2}`);
-
     ws.onopen = () => console.log(`[WS] Connected: ${coin1} & ${coin2}`);
     ws.onmessage = (e) => {
       const data = JSON.parse(e.data);
@@ -187,21 +314,20 @@ function App() {
     return () => ws.close();
   }, [coin1, coin2]);
 
-  // ── Funding rate via REST polling ──
+  // ── Funding rate polling ──
   const fetchFunding = useCallback(async () => {
     try {
-      const [r1, r2] = await Promise.all([
-        fetch(`${FUNDING_API}?symbol=${coin1.toUpperCase()}USDT`),
-        fetch(`${FUNDING_API}?symbol=${coin2.toUpperCase()}USDT`),
+      const [d1, d2] = await Promise.all([
+        fetchFundingRate(exchange1, coin1),
+        fetchFundingRate(exchange2, coin2),
       ]);
-      const [d1, d2] = await Promise.all([r1.json(), r2.json()]);
       setFunding1(d1);
       setFunding2(d2);
-      console.log(`[REST] Funding updated: ${coin1} rate=${d1.lastFundingRate} | ${coin2} rate=${d2.lastFundingRate}`);
+      console.log(`[REST] ${exchange1}:${coin1} rate=${d1.lastFundingRate} | ${exchange2}:${coin2} rate=${d2.lastFundingRate}`);
     } catch (err) {
       console.error("[REST] Funding fetch failed:", err.message);
     }
-  }, [coin1, coin2]);
+  }, [coin1, coin2, exchange1, exchange2]);
 
   useEffect(() => {
     setFunding1(null);
@@ -226,6 +352,9 @@ function App() {
     if (c2) setCoin2(c2);
   };
 
+  const ex1 = EXCHANGES[exchange1];
+  const ex2 = EXCHANGES[exchange2];
+
   return (
     <>
       {/* Header */}
@@ -237,7 +366,17 @@ function App() {
             <div className="app-subtitle">Perpetual Futures Monitor</div>
           </div>
         </div>
-        <div className="header-badge">Binance Futures</div>
+        <div className="header-exchanges-pill">
+          <span className="header-exchange-chip" style={{ color: ex1.color, background: ex1.bgColor }}>
+            <ExchangeIcon exchangeId={exchange1} size={14} />
+            {ex1.name}
+          </span>
+          <span className="header-vs">vs</span>
+          <span className="header-exchange-chip" style={{ color: ex2.color, background: ex2.bgColor }}>
+            <ExchangeIcon exchangeId={exchange2} size={14} />
+            {ex2.name}
+          </span>
+        </div>
       </header>
 
       {/* Cards */}
@@ -250,6 +389,8 @@ function App() {
           inputValue={inputCoin1}
           onInputChange={setInputCoin1}
           onApply={handleApply1}
+          exchange={exchange1}
+          onExchangeChange={(ex) => { setExchange1(ex); setFunding1(null); }}
         />
         <CryptoCard
           coin={coin2}
@@ -259,12 +400,25 @@ function App() {
           inputValue={inputCoin2}
           onInputChange={setInputCoin2}
           onApply={handleApply2}
+          exchange={exchange2}
+          onExchangeChange={(ex) => { setExchange2(ex); setFunding2(null); }}
         />
       </div>
 
       {/* Spread Bar */}
       {spread !== null && (
         <div className="spread-bar">
+          <div className="spread-exchanges">
+            <span className="spread-ex-tag" style={{ color: ex1.color }}>
+              <ExchangeIcon exchangeId={exchange1} size={14} />
+              {ex1.name}/{coin1.toUpperCase()}
+            </span>
+            <span className="spread-arrow">→</span>
+            <span className="spread-ex-tag" style={{ color: ex2.color }}>
+              <ExchangeIcon exchangeId={exchange2} size={14} />
+              {ex2.name}/{coin2.toUpperCase()}
+            </span>
+          </div>
           <span className="spread-label">Funding Spread</span>
           <span
             className="spread-value"
