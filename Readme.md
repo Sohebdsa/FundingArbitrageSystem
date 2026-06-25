@@ -310,6 +310,7 @@ This is a **delta-neutral strategy**: because you're long one side and short the
 | WebSocket lib | `ws` (npm) | Server-side WebSocket connection |
 | Data source | Binance Futures API | Trade stream + funding rates |
 | Dev server | nodemon | Auto-restart on file change |
+| Telegram | Interacting with user With Telegram |
 
 ---
 
