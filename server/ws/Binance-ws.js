@@ -16,7 +16,6 @@ export default function ConnectWebSocket(clientWs, coin1, coin2) {
       quantity: trade.q
     };
 
-    // 🔍 LOG: shows what coin value is actually being sent to the client
     console.log(`[Server WS] Sending → coin: "${payload.coin}" | symbol: "${payload.symbol}" | price: ${payload.price}`);
 
     if (clientWs.readyState === WebSocket.OPEN) {
