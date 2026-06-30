@@ -23,6 +23,38 @@ app.use('/binanceApi', async (req, res) => {
   res.json(data);
 });
 
+// ── BloFin proxy (browser can't call blofin directly due to CORS) ──
+app.get('/proxy/blofin/funding', async (req, res) => {
+  const { instId } = req.query;
+  if (!instId) return res.status(400).json({ error: 'instId required' });
+  try {
+    const upstream = await fetch(
+      `https://openapi.blofin.com/api/v1/market/funding-rate?instId=${encodeURIComponent(instId)}`
+    );
+    const data = await upstream.json();
+    res.json(data);
+  } catch (err) {
+    console.error('[Proxy] BloFin funding error:', err.message);
+    res.status(502).json({ error: 'BloFin upstream error', detail: err.message });
+  }
+});
+
+// ── BloFin tickers proxy (for mark/index price) ──
+app.get('/proxy/blofin/ticker', async (req, res) => {
+  const { instId } = req.query;
+  if (!instId) return res.status(400).json({ error: 'instId required' });
+  try {
+    const upstream = await fetch(
+      `https://openapi.blofin.com/api/v1/market/tickers?instId=${encodeURIComponent(instId)}`
+    );
+    const data = await upstream.json();
+    res.json(data);
+  } catch (err) {
+    console.error('[Proxy] BloFin ticker error:', err.message);
+    res.status(502).json({ error: 'BloFin upstream error', detail: err.message });
+  }
+});
+
 // Start server
 const server = app.listen(port, '0.0.0.0', () => {
   console.log(`Server is Listening on ${port}...`);
@@ -37,3 +69,4 @@ wss.on("connection", (ws, req) => {
   const coin2 = url.searchParams.get("coin2") || "eth";
   ConnectWebSocket(ws, coin1, coin2);
 });
+

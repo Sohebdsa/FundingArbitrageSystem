@@ -93,20 +93,36 @@ async function fetchBybitFunding(coin) {
 
 async function fetchBlofinFunding(coin) {
   const instId = toBlofinSymbol(coin);
-  // Blofin public funding rate endpoint
-  const res = await fetch(
-    `https://openapi.blofin.com/api/v1/market/funding-rate?instId=${instId}`
-  );
-  if (!res.ok) throw new Error(`BloFin API error: ${res.status}`);
+  // Route through local server proxy to bypass BloFin CORS restrictions
+  const PROXY = 'http://localhost:3000';
+
+  // Fetch funding rate via proxy
+  const res = await fetch(`${PROXY}/proxy/blofin/funding?instId=${encodeURIComponent(instId)}`);
+  if (!res.ok) throw new Error(`BloFin proxy error: ${res.status}`);
   const d = await res.json();
   const record = d.data?.[0];
   if (!record) throw new Error(`BloFin: no data for ${instId}`);
-  // Blofin gives fundingTime as ms timestamp
+
+  // Also fetch ticker for mark/index price via proxy
+  let markPrice = null;
+  let indexPrice = null;
+  try {
+    const tickerRes = await fetch(`${PROXY}/proxy/blofin/ticker?instId=${encodeURIComponent(instId)}`);
+    if (tickerRes.ok) {
+      const tickerData = await tickerRes.json();
+      const ticker = tickerData.data?.[0];
+      if (ticker) {
+        markPrice = ticker.markPrice ?? null;
+        indexPrice = ticker.indexPrice ?? null;
+      }
+    }
+  } catch { /* mark/index price is optional */ }
+
   return {
     exchange: 'blofin',
     symbol: record.instId,
-    markPrice: null,  // not in this endpoint
-    indexPrice: null,
+    markPrice,
+    indexPrice,
     lastFundingRate: record.fundingRate,
     nextFundingTime: Number(record.fundingTime),
   };
