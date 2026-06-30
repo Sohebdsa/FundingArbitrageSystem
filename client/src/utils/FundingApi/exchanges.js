@@ -132,8 +132,13 @@ async function fetchBlofinFunding(coin) {
 export async function fetchFundingRate(exchangeId, coin) {
   switch (exchangeId) {
     case 'binance': return fetchBinanceFunding(coin);
-    case 'bybit':   return fetchBybitFunding(coin);
-    case 'blofin':  return fetchBlofinFunding(coin);
+    case 'bybit': return fetchBybitFunding(coin);
+    case 'blofin': return fetchBlofinFunding(coin);
+    //Case to be Added
+    //1.okx
+    //2.coindcx
+    //3.Bitmex
+    //4.Kucoin
     default: throw new Error(`Unknown exchange: ${exchangeId}`);
   }
 }
