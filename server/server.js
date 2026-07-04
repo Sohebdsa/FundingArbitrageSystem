@@ -55,6 +55,38 @@ app.get('/proxy/blofin/ticker', async (req, res) => {
   }
 });
 
+// ── Telegram message sender ──
+app.post('/api/telegram/send', async (req, res) => {
+  const { token, chatId, message, parseMode, silent } = req.body;
+  if (!token || !chatId || !message) {
+    return res.status(400).json({ error: 'token, chatId, and message are required' });
+  }
+
+  try {
+    const telegramUrl = `https://api.telegram.org/bot${token}/sendMessage`;
+    const response = await fetch(telegramUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: chatId,
+        text: message,
+        parse_mode: parseMode || 'HTML',
+        disable_notification: !!silent,
+      }),
+    });
+
+    const data = await response.json();
+    if (!data.ok) {
+      return res.status(502).json({ error: 'Telegram API error', detail: data.description });
+    }
+
+    res.json({ success: true, result: data.result });
+  } catch (err) {
+    console.error('[Telegram] Error sending message:', err.message);
+    res.status(500).json({ error: 'Internal server error', detail: err.message });
+  }
+});
+
 // Start server
 const server = app.listen(port, '0.0.0.0', () => {
   console.log(`Server is Listening on ${port}...`);
