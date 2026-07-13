@@ -55,6 +55,34 @@ app.get('/proxy/blofin/ticker', async (req, res) => {
   }
 });
 
+// ── BloFin bulk funding rates proxy (all instruments, for ArbList) ──
+app.get('/proxy/blofin/funding-all', async (req, res) => {
+  try {
+    const upstream = await fetch(
+      'https://openapi.blofin.com/api/v1/market/funding-rate'
+    );
+    const data = await upstream.json();
+    res.json(data);
+  } catch (err) {
+    console.error('[Proxy] BloFin funding-all error:', err.message);
+    res.status(502).json({ error: 'BloFin upstream error', detail: err.message });
+  }
+});
+
+// ── BloFin bulk tickers proxy (all instruments, mark/index price for ArbList) ──
+app.get('/proxy/blofin/tickers-all', async (req, res) => {
+  try {
+    const upstream = await fetch(
+      'https://openapi.blofin.com/api/v1/market/tickers'
+    );
+    const data = await upstream.json();
+    res.json(data);
+  } catch (err) {
+    console.error('[Proxy] BloFin tickers-all error:', err.message);
+    res.status(502).json({ error: 'BloFin upstream error', detail: err.message });
+  }
+});
+
 // ── Telegram message sender ──
 app.post('/api/telegram/send', async (req, res) => {
   const { chatId, message, parseMode, silent } = req.body;

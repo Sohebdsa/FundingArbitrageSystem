@@ -2117,3 +2117,813 @@ body {
   color: var(--text-dim);
   max-width: 420px;
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   ARB LIST PAGE
+   ═══════════════════════════════════════════════════════════════════ */
+
+.arbl-page {
+  padding: 28px 32px 48px;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* ── Header ─────────────────────────────────────────────────────── */
+.arbl-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+
+.arbl-header-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.arbl-title-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(0,229,160,0.15), rgba(61,139,255,0.12));
+  border: 1px solid rgba(0,229,160,0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--green);
+  flex-shrink: 0;
+}
+
+.arbl-title {
+  font-family: var(--sans);
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--text-bright);
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+.arbl-subtitle {
+  font-size: 12px;
+  color: var(--text);
+  margin-top: 2px;
+  font-family: var(--mono);
+}
+
+.arbl-header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.arbl-last-updated {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text-dim);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.arbl-live-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--green);
+  opacity: 0.7;
+}
+
+.arbl-live-dot--pulse {
+  animation: arbl-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes arbl-pulse {
+  0%, 100% { opacity: 0.7; transform: scale(1); }
+  50%       { opacity: 0.2; transform: scale(0.7); }
+}
+
+.arbl-refresh-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: rgba(0,229,160,0.08);
+  border: 1px solid rgba(0,229,160,0.25);
+  border-radius: 8px;
+  color: var(--green);
+  font-family: var(--mono);
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.arbl-refresh-btn:hover:not(:disabled) {
+  background: rgba(0,229,160,0.16);
+  border-color: rgba(0,229,160,0.45);
+}
+
+.arbl-refresh-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@keyframes arbl-spin {
+  to { transform: rotate(360deg); }
+}
+
+.arbl-spin {
+  animation: arbl-spin 0.8s linear infinite;
+}
+
+/* ── Error banner ───────────────────────────────────────────────── */
+.arbl-error-banner {
+  margin-top: 12px;
+  padding: 10px 14px;
+  background: rgba(255,71,87,0.08);
+  border: 1px solid rgba(255,71,87,0.25);
+  border-radius: 8px;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--red);
+}
+
+/* ── Exchange status pills ──────────────────────────────────────── */
+.arbl-exchange-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+  flex-wrap: wrap;
+}
+
+.arbl-ex-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text);
+  background: var(--surface);
+}
+
+.arbl-ex-status-pill.arbl-ex-status-err {
+  color: var(--red);
+  border-color: rgba(255,71,87,0.3);
+  background: rgba(255,71,87,0.06);
+}
+
+.arbl-ex-status-pill.arbl-ex-status-total {
+  color: var(--text-bright);
+  border-color: var(--border-glow);
+}
+
+.arbl-ex-status-count {
+  margin-left: 3px;
+  opacity: 0.65;
+}
+
+/* ── Stats bar ──────────────────────────────────────────────────── */
+.arbl-stats {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 18px 24px;
+  margin-top: 18px;
+  flex-wrap: wrap;
+}
+
+.arbl-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  min-width: 100px;
+  gap: 4px;
+}
+
+.arbl-stat-div {
+  width: 1px;
+  height: 36px;
+  background: var(--border);
+  flex-shrink: 0;
+}
+
+.arbl-stat-value {
+  font-family: var(--mono);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-bright);
+  letter-spacing: -0.03em;
+}
+
+.arbl-stat-value.arbl-stat-green { color: var(--green); }
+.arbl-stat-value.arbl-stat-gold  { color: var(--gold); }
+
+.arbl-stat-label {
+  font-size: 11px;
+  color: var(--text-dim);
+  font-family: var(--mono);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ── Filter bar ─────────────────────────────────────────────────── */
+.arbl-filters {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  padding: 16px 18px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  margin-top: 14px;
+  flex-wrap: wrap;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.arbl-filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 130px;
+  flex: 1;
+}
+
+.arbl-filter-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+
+.arbl-filter-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.arbl-filter-icon {
+  position: absolute;
+  left: 10px;
+  color: var(--text-dim);
+  pointer-events: none;
+}
+
+.arbl-filter-input {
+  width: 100%;
+  padding: 8px 10px 8px 30px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-bright);
+  font-family: var(--mono);
+  font-size: 12px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.arbl-filter-num {
+  padding-left: 10px;
+}
+
+.arbl-filter-input:focus {
+  border-color: rgba(61,139,255,0.5);
+}
+
+.arbl-filter-clear-x {
+  position: absolute;
+  right: 8px;
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  cursor: pointer;
+  font-size: 11px;
+  padding: 2px 4px;
+  border-radius: 4px;
+  transition: color 0.15s;
+}
+
+.arbl-filter-clear-x:hover { color: var(--text-bright); }
+
+.arbl-filter-select {
+  width: 100%;
+  padding: 8px 10px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-bright);
+  font-family: var(--mono);
+  font-size: 12px;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.2s;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23556070' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 28px;
+}
+
+.arbl-filter-select:focus {
+  border-color: rgba(61,139,255,0.5);
+}
+
+.arbl-filter-reset-wrap {
+  min-width: auto;
+  flex: 0 0 auto;
+}
+
+.arbl-reset-btn {
+  padding: 8px 14px;
+  background: rgba(85,96,112,0.15);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  white-space: nowrap;
+}
+
+.arbl-reset-btn:hover {
+  background: rgba(85,96,112,0.3);
+  color: var(--text-bright);
+}
+
+/* ── Table wrapper ──────────────────────────────────────────────── */
+.arbl-table-wrap {
+  margin-top: 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  overflow: hidden;
+  overflow-x: auto;
+  background: var(--surface);
+  flex: 1;
+}
+
+/* ── Table ──────────────────────────────────────────────────────── */
+.arbl-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: auto;
+  min-width: 860px;
+}
+
+/* ── Table head ─────────────────────────────────────────────────── */
+.arbl-th {
+  padding: 14px 16px;
+  text-align: left;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+  user-select: none;
+}
+
+.arbl-th-sortable {
+  cursor: pointer;
+  transition: color 0.15s;
+}
+
+.arbl-th-sortable:hover {
+  color: var(--text-bright);
+}
+
+.arbl-th-rank { width: 48px; text-align: center; }
+.arbl-th-spread { color: var(--green); }
+
+.arbl-sort-icon {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  margin-left: 5px;
+  font-size: 8px;
+  line-height: 1;
+  gap: 1px;
+  vertical-align: middle;
+}
+
+/* ── Table body rows ────────────────────────────────────────────── */
+.arbl-row {
+  border-bottom: 1px solid rgba(30,45,68,0.6);
+  transition: background 0.15s;
+}
+
+.arbl-row:hover {
+  background: rgba(255,255,255,0.025);
+}
+
+.arbl-row--high {
+  background: rgba(0,229,160,0.025);
+}
+
+.arbl-row--high:hover {
+  background: rgba(0,229,160,0.05);
+}
+
+.arbl-row--med {
+  background: rgba(245,166,35,0.018);
+}
+
+.arbl-row--med:hover {
+  background: rgba(245,166,35,0.04);
+}
+
+.arbl-td {
+  padding: 12px 16px;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--text);
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.arbl-td-rank {
+  text-align: center;
+}
+
+.arbl-rank-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  background: var(--surface2);
+  font-size: 11px;
+  color: var(--text-dim);
+  font-weight: 700;
+}
+
+.arbl-td-coin {
+  display: flex;
+  align-items: baseline;
+  gap: 3px;
+}
+
+.arbl-coin-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-bright);
+}
+
+.arbl-coin-usdt {
+  font-size: 9px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+}
+
+.arbl-td-rate { font-variant-numeric: tabular-nums; }
+
+.arbl-rate-pos { color: var(--green); }
+.arbl-rate-neg { color: var(--red); }
+
+.arbl-td-spread { position: relative; }
+
+.arbl-spread-val {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--green);
+  font-variant-numeric: tabular-nums;
+}
+
+.arbl-td-apy { font-variant-numeric: tabular-nums; }
+
+.arbl-apy-val {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Exchange badge ─────────────────────────────────────────────── */
+.arbl-ex-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid;
+  font-size: 11px;
+  font-family: var(--mono);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+/* ── Confidence badge ───────────────────────────────────────────── */
+.arbl-conf-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid;
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* ── Empty state ────────────────────────────────────────────────── */
+.arbl-empty {
+  text-align: center;
+  padding: 60px 24px;
+  color: var(--text-dim);
+}
+
+.arbl-empty-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  font-family: var(--mono);
+  font-size: 13px;
+}
+
+/* ── Skeleton loader ────────────────────────────────────────────── */
+.arbl-skeleton-row td {
+  padding: 13px 16px;
+}
+
+.arbl-skeleton-cell {
+  display: block;
+  height: 14px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, var(--surface2) 25%, rgba(30,45,68,0.6) 50%, var(--surface2) 75%);
+  background-size: 200% 100%;
+  animation: arbl-shimmer 1.5s infinite;
+  width: 100%;
+  max-width: 120px;
+}
+
+@keyframes arbl-shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* ── Pagination ─────────────────────────────────────────────────── */
+.arbl-pagination-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+
+.arbl-pagination-info {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+.arbl-pagination {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.arbl-page-btn {
+  min-width: 34px;
+  height: 34px;
+  padding: 0 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.arbl-page-btn:hover:not(:disabled) {
+  background: var(--surface2);
+  color: var(--text-bright);
+  border-color: var(--border-glow);
+}
+
+.arbl-page-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.arbl-page-btn.arbl-page-active {
+  background: rgba(0,229,160,0.12);
+  border-color: rgba(0,229,160,0.4);
+  color: var(--green);
+}
+
+.arbl-page-ellipsis {
+  color: var(--text-dim);
+  font-family: var(--mono);
+  font-size: 12px;
+  padding: 0 4px;
+  line-height: 34px;
+}
+
+/* ── Responsive ─────────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .arbl-page {
+    padding: 16px 16px 32px;
+  }
+
+  .arbl-stats {
+    padding: 14px 16px;
+    gap: 12px;
+  }
+
+  .arbl-stat {
+    min-width: 80px;
+  }
+
+  .arbl-stat-value {
+    font-size: 18px;
+  }
+
+  .arbl-filters {
+    position: static;
+    gap: 8px;
+  }
+
+  .arbl-filter-group {
+    min-width: calc(50% - 8px);
+    flex: 0 0 calc(50% - 8px);
+  }
+
+  .arbl-filter-reset-wrap {
+    min-width: 100%;
+    flex: 0 0 100%;
+  }
+
+  .arbl-pagination-wrap {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 600px) {
+  .arbl-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .arbl-stat-div {
+    display: none;
+  }
+
+  .arbl-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px 0;
+  }
+
+  .arbl-stat {
+    align-items: flex-start;
+    padding: 0 8px;
+  }
+
+  .arbl-filter-group {
+    min-width: 100%;
+    flex: 0 0 100%;
+  }
+}
+
+/* ── Next Funding Time column ────────────────────────────────────── */
+.arbl-th-funding {
+  color: rgba(61,139,255,0.9);
+  white-space: nowrap;
+}
+
+.arbl-td-funding {
+  vertical-align: middle;
+}
+
+.arbl-fund-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.arbl-fund-time {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.arbl-fund-na {
+  color: var(--text-dim);
+  font-family: var(--mono);
+  font-size: 12px;
+}
+
+/* Urgency levels */
+.arbl-fund-urgent {
+  color: #ff4757;
+  font-weight: 700;
+}
+
+.arbl-fund-soon {
+  color: #f5a623;
+}
+
+.arbl-fund-now {
+  color: #00e5a0;
+  font-weight: 700;
+  animation: arbl-fund-blink 1s ease-in-out infinite;
+}
+
+@keyframes arbl-fund-blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+
+.arbl-fund-side-label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0;
+  background: var(--surface2);
+  color: var(--text-dim);
+  flex-shrink: 0;
+}
+
+/* ── Open in Scanner button ──────────────────────────────────────── */
+.arbl-th-action {
+  text-align: center;
+  width: 72px;
+}
+
+.arbl-td-action {
+  text-align: center;
+  padding: 8px 10px;
+}
+
+.arbl-open-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 10px;
+  background: rgba(61,139,255,0.09);
+  border: 1px solid rgba(61,139,255,0.3);
+  border-radius: 7px;
+  color: var(--blue);
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.1s;
+  line-height: 1;
+}
+
+.arbl-open-btn:hover {
+  background: rgba(61,139,255,0.2);
+  border-color: rgba(61,139,255,0.55);
+  color: #6ea8fe;
+  transform: translateY(-1px);
+}
+
+.arbl-open-btn:active {
+  transform: translateY(0);
+}
+
+/* ── Row flash feedback when Scan is clicked ─────────────────────── */
+.arbl-row--flash {
+  animation: arbl-row-flash 0.7s ease-out;
+}
+
+@keyframes arbl-row-flash {
+  0%   { background: rgba(61,139,255,0.18); }
+  100% { background: transparent; }
+}
