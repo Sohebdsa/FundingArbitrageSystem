@@ -14,6 +14,7 @@ import CryptoCard from "./components/CryptoCard";
 import Sidebar from "./components/sidebar/Sidebar";
 import LeftSidebar from "./components/LeftSidebar";
 import Home from "./pages/Home";
+import ArbList from "./pages/ArbList";
 import CalculateApy from "./pages/CalculateApy";
 import TelegramSetting from "./pages/TelegramSetting";
 import ExecutionEngine from "./pages/ExecutionEngine";
@@ -515,6 +516,7 @@ function App() {
           </>
         )}
 
+        {currentPage === "arb-list" && <ArbList />}
         {currentPage === "calculate-apy" && <CalculateApy />}
         {currentPage === "telegram-setting" && <TelegramSetting />}
         {currentPage === "execution-engine" && <ExecutionEngine />}
