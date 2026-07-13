@@ -1,7 +1,12 @@
 // ── Message Templates ────────────────────────────────────────────────────────
-// All Telegram message formatting lives here. Uses HTML parse_mode.
+// All Telegram message formatting. Uses HTML parse_mode.
+// Design rules:
+//   • ▲ = LONG (buy)   ▼ = SHORT (sell)
+//   • ─────── dividers to separate sections clearly
+//   • monospace <code> for all numeric values
+//   • Confidence: HIGH ★★★ / MED ★★☆ / LOW ★☆☆ / NONE ☆☆☆
 
-// ── Helpers ──────────────────────────────────────────────────────────────────
+// ── Helpers ───────────────────────────────────────────────────────────────────
 
 function fmtRate(r) {
   if (r == null || isNaN(r)) return '—';
@@ -14,13 +19,14 @@ function fmtSpread(abs) {
 }
 
 function fmtApy(v) {
+  if (v == null || isNaN(v)) return '—';
   return v.toFixed(2) + '%';
 }
 
 function fmtCountdown(ms) {
   if (!ms || ms <= 0) return '—';
   const diff = ms - Date.now();
-  if (diff <= 0) return 'Now ⚡';
+  if (diff <= 0) return '⚡ Now';
   const h = Math.floor(diff / 3_600_000);
   const m = Math.floor((diff % 3_600_000) / 60_000);
   const s = Math.floor((diff % 60_000) / 1_000);
@@ -29,77 +35,110 @@ function fmtCountdown(ms) {
   return `${s}s`;
 }
 
-function exchangeEmoji(id) {
-  const map = { binance: '🟡', bybit: '🟠', blofin: '🔵' };
-  return map[id] || '⚪';
-}
-
 function exchangeName(id) {
   const map = { binance: 'Binance', bybit: 'Bybit', blofin: 'BloFin' };
-  return map[id] || id;
+  return map[id] || (id ?? '—');
 }
+
+function confStars(level) {
+  const map = { HIGH: '★★★', MED: '★★☆', LOW: '★☆☆', NONE: '☆☆☆' };
+  return map[level] ?? '☆☆☆';
+}
+
+function confLabel(level) {
+  const map = { HIGH: 'HIGH', MED: 'MED', LOW: 'LOW', NONE: 'NONE' };
+  return map[level] ?? level;
+}
+
+// Horizontal rule (Telegram renders these as plain text separators)
+const HR = '────────────────────';
+const HR_THIN = '· · · · · · · · · · ·';
 
 // ── Welcome / Help ────────────────────────────────────────────────────────────
 
 export function formatWelcomeMessage() {
-  return (
-    `🤖 <b>ArbScanner Bot — Active</b>\n\n` +
-    `I monitor cross-exchange funding rate spreads and send you adaptive signals.\n\n` +
-    `<b>Commands:</b>\n` +
-    `/on — Enable signals\n` +
-    `/off — Disable all signals\n` +
-    `/ArbList — View top spread opportunities\n` +
-    `/status — View active subscriptions\n` +
-    `/help — Show this message\n\n` +
-    `<b>Subscribe to a coin:</b>\n` +
-    `Send <code>/BTC</code>, <code>/ETH</code>, <code>/SOL</code>, etc.\n` +
-    `to start receiving adaptive funding signals for that coin.\n\n` +
-    `<b>Unsubscribe:</b>\n` +
-    `Send <code>/stop BTC</code> to stop signals for a specific coin.`
-  );
+  return [
+    `🤖 <b>ArbScanner Bot</b>`,
+    `<i>Cross-exchange funding rate monitor</i>`,
+    ``,
+    HR,
+    ``,
+    `<b>📌 Commands</b>`,
+    ``,
+    `/on          Enable signals`,
+    `/off         Disable + clear all`,
+    `/ArbList     Top spread opportunities`,
+    `/status      Your active subscriptions`,
+    `/help        Show this message`,
+    ``,
+    HR_THIN,
+    ``,
+    `<b>📈 Subscribe to a coin</b>`,
+    `Send <code>/BTC</code>, <code>/ETH</code>, <code>/SOL</code> …`,
+    `to get adaptive funding signals.`,
+    ``,
+    `<b>📉 Unsubscribe</b>`,
+    `Send <code>/stop BTC</code> to stop a specific coin.`,
+    ``,
+    HR,
+    `<i>Signals escalate as funding time approaches</i>`,
+  ].join('\n');
 }
 
 export function formatHelpMessage() {
   return formatWelcomeMessage();
 }
 
-// ── On / Off ─────────────────────────────────────────────────────────────────
+// ── On / Off ──────────────────────────────────────────────────────────────────
 
 export function formatOnMessage() {
-  return (
-    `✅ <b>Bot enabled for this chat.</b>\n\n` +
-    `Send <code>/ArbList</code> to browse top opportunities,\n` +
-    `or <code>/BTC</code> to subscribe to BTC signals.`
-  );
+  return [
+    `✅ <b>Bot enabled</b>`,
+    ``,
+    `Use <code>/ArbList</code> to browse opportunities`,
+    `or <code>/BTC</code> to subscribe to BTC signals.`,
+  ].join('\n');
 }
 
 export function formatOffMessage() {
-  return (
-    `🔴 <b>Bot disabled for this chat.</b>\n\n` +
-    `All active subscriptions have been cancelled.\n` +
-    `Send <code>/on</code> to re-enable.`
-  );
+  return [
+    `⛔ <b>Bot disabled</b>`,
+    ``,
+    `All subscriptions cancelled.`,
+    `Send <code>/on</code> to re-enable.`,
+  ].join('\n');
 }
 
-// ── Status ───────────────────────────────────────────────────────────────────
+// ── Status ────────────────────────────────────────────────────────────────────
 
 export function formatStatusMessage(subscriptions) {
   if (!subscriptions || subscriptions.size === 0) {
-    return (
-      `📋 <b>Active Subscriptions: none</b>\n\n` +
-      `Send <code>/BTC</code>, <code>/ETH</code>, etc. to subscribe to a coin.`
-    );
+    return [
+      `📋 <b>Active Subscriptions</b>`,
+      ``,
+      `None. Send <code>/BTC</code>, <code>/ETH</code>, etc. to subscribe.`,
+    ].join('\n');
   }
 
-  let lines = [`📋 <b>Active Subscriptions (${subscriptions.size})</b>\n`];
+  const lines = [
+    `📋 <b>Active Subscriptions  (${subscriptions.size})</b>`,
+    ``,
+    HR,
+  ];
+
+  let i = 1;
   subscriptions.forEach(({ coin, longExchange, shortExchange }) => {
     lines.push(
-      `• <b>${coin}</b>  ${exchangeEmoji(longExchange)} LONG: ${exchangeName(longExchange)} · ` +
-      `${exchangeEmoji(shortExchange)} SHORT: ${exchangeName(shortExchange)}\n` +
-      `  Stop: <code>/stop ${coin}</code>`
+      ``,
+      `<b>${i}. ${coin}USDT</b>`,
+      `   ▲ LONG   ${exchangeName(longExchange)}`,
+      `   ▼ SHORT  ${exchangeName(shortExchange)}`,
+      `   Stop: <code>/stop ${coin}</code>`,
     );
+    i++;
   });
 
+  lines.push(``, HR);
   return lines.join('\n');
 }
 
@@ -108,28 +147,39 @@ export function formatStatusMessage(subscriptions) {
 export function formatSignalMessage({ coin, opportunity, nextIntervalMin, isOnDemand = false }) {
   const { spreadAbs, annualizedApy, confidence, long, short } = opportunity;
 
-  const confEmoji = { HIGH: '🟢', MED: '🟡', LOW: '🔵', NONE: '⚪' };
   const longCountdown  = fmtCountdown(long.nextFundingTime);
   const shortCountdown = fmtCountdown(short.nextFundingTime);
 
-  const header = isOnDemand
-    ? `📡 <b>On-Demand Signal — ${coin}USDT</b>`
-    : `🚨 <b>Funding Signal — ${coin}USDT</b>`;
+  const title = isOnDemand
+    ? `📡 <b>On-Demand Signal</b>`
+    : `🔔 <b>Funding Signal</b>`;
 
   const lines = [
-    header,
+    title,
+    `<code>${coin}USDT</code>   ${confStars(confidence)} ${confLabel(confidence)}`,
     ``,
-    `${confEmoji[confidence] || '⚪'} <b>Confidence:</b> ${confidence}`,
-    `📈 <b>Spread:</b>  <code>${fmtSpread(spreadAbs)}</code>`,
-    `💰 <b>APY:</b>     <code>${fmtApy(annualizedApy)}</code>`,
+    HR,
     ``,
-    `${exchangeEmoji(long.exchange)} <b>LONG  (${exchangeName(long.exchange)}):</b>  rate <code>${fmtRate(long.rate)}</code>  ⏱ ${longCountdown}`,
-    `${exchangeEmoji(short.exchange)} <b>SHORT (${exchangeName(short.exchange)}):</b>  rate <code>${fmtRate(short.rate)}</code>  ⏱ ${shortCountdown}`,
+    `<b>Spread</b>   <code>${fmtSpread(spreadAbs)}</code>`,
+    `<b>APY</b>      <code>${fmtApy(annualizedApy)}</code> annualized`,
+    ``,
+    HR_THIN,
+    ``,
+    `▲ <b>LONG   ${exchangeName(long.exchange)}</b>`,
+    `  Rate      <code>${fmtRate(long.rate)}</code>`,
+    `  Funding   ${longCountdown}`,
+    ``,
+    `▼ <b>SHORT  ${exchangeName(short.exchange)}</b>`,
+    `  Rate      <code>${fmtRate(short.rate)}</code>`,
+    `  Funding   ${shortCountdown}`,
+    ``,
+    HR,
   ];
 
   if (!isOnDemand && nextIntervalMin != null) {
-    lines.push(``);
-    lines.push(`🔔 <i>Next signal in ${nextIntervalMin} min</i>`);
+    lines.push(`<i>Next signal in ${nextIntervalMin} min</i>`);
+  } else if (isOnDemand) {
+    lines.push(`<i>Use buttons below for more options</i>`);
   }
 
   return lines.join('\n');
@@ -140,31 +190,50 @@ export function formatSignalMessage({ coin, opportunity, nextIntervalMin, isOnDe
 const ARB_LIST_PAGE_SIZE = 10;
 
 export function formatArbListPage(spreads, page) {
-  const totalPages = Math.ceil(spreads.length / ARB_LIST_PAGE_SIZE);
+  const totalPages = Math.max(1, Math.ceil(spreads.length / ARB_LIST_PAGE_SIZE));
   const start = (page - 1) * ARB_LIST_PAGE_SIZE;
   const pageItems = spreads.slice(start, start + ARB_LIST_PAGE_SIZE);
 
   if (pageItems.length === 0) {
-    return { text: `❌ No data available for page ${page}.`, totalPages };
+    return {
+      text: `❌ No data for page ${page}. Total pages: ${totalPages}`,
+      totalPages,
+      pageItems: [],
+    };
   }
 
   const lines = [
-    `📊 <b>Arb List — Page ${page}/${totalPages}</b>  (${spreads.length} pairs total)\n`,
+    `📊 <b>Arb List</b>   Page ${page} / ${totalPages}`,
+    `<i>${spreads.length} pairs · sorted by spread</i>`,
+    ``,
+    HR,
   ];
 
   pageItems.forEach((opp, i) => {
     const rank = start + i + 1;
     const { coin, spreadAbs, annualizedApy, long, short, confidence } = opp;
-    const confEmoji = { HIGH: '🟢', MED: '🟡', LOW: '🔵', NONE: '⚪' };
 
     lines.push(
-      `<b>#${rank} ${coin}USDT</b>  ${confEmoji[confidence] || '⚪'} ${confidence}\n` +
-      `  Spread: <code>${fmtSpread(spreadAbs)}</code>  APY: <code>${fmtApy(annualizedApy)}</code>\n` +
-      `  ${exchangeEmoji(long.exchange)} LONG: ${exchangeName(long.exchange)}   ` +
-      `${exchangeEmoji(short.exchange)} SHORT: ${exchangeName(short.exchange)}\n` +
-      `  ⏱ ${fmtCountdown(opp.nextFundingTime)}  →  <code>/${coin}</code> to subscribe`
+      ``,
+      // Rank + coin + confidence stars on one line
+      `<b>#${rank}  ${coin}USDT</b>   ${confStars(confidence)} ${confLabel(confidence)}`,
+      // Spread and APY on one line, both monospace
+      `  <code>${fmtSpread(spreadAbs)}</code>  ·  APY <code>${fmtApy(annualizedApy)}</code>  ·  ⏱ ${fmtCountdown(opp.nextFundingTime)}`,
+      // Long / Short on separate lines with triangles
+      `  ▲ ${exchangeName(long.exchange).padEnd(8)}  ▼ ${exchangeName(short.exchange)}`,
+      // Subscribe hint
+      `  → <code>/${coin}</code>`,
+      // Thin divider after each item except the last
+      i < pageItems.length - 1 ? HR_THIN : HR,
     );
   });
+
+  // Ensure HR is at end if last item already added it
+  if (pageItems.length > 0) {
+    // Already pushed HR above
+  }
+
+  lines.push(`<i>Use buttons below to navigate</i>`);
 
   return { text: lines.join('\n'), totalPages, pageItems };
 }
@@ -175,36 +244,54 @@ export { ARB_LIST_PAGE_SIZE };
 
 export function formatSubscribeMessage(coin, longExchange, shortExchange, opportunity) {
   const { spreadAbs, annualizedApy, confidence } = opportunity;
-  return (
-    `✅ <b>Subscribed to ${coin}USDT</b>\n\n` +
-    `${exchangeEmoji(longExchange)} LONG:  ${exchangeName(longExchange)}\n` +
-    `${exchangeEmoji(shortExchange)} SHORT: ${exchangeName(shortExchange)}\n\n` +
-    `Current spread: <code>${fmtSpread(spreadAbs)}</code>  |  APY: <code>${fmtApy(annualizedApy)}</code>  |  ${confidence}\n\n` +
-    `📡 You'll receive adaptive signals as funding time approaches.\n` +
-    `Use <code>/stop ${coin}</code> to cancel.`
-  );
+  return [
+    `✅ <b>Subscribed to ${coin}USDT</b>`,
+    ``,
+    HR,
+    ``,
+    `▲ LONG   <b>${exchangeName(longExchange)}</b>`,
+    `▼ SHORT  <b>${exchangeName(shortExchange)}</b>`,
+    ``,
+    `Spread   <code>${fmtSpread(spreadAbs)}</code>`,
+    `APY      <code>${fmtApy(annualizedApy)}</code>`,
+    `Signal   ${confStars(confidence)} ${confLabel(confidence)}`,
+    ``,
+    HR,
+    ``,
+    `Adaptive signals will escalate as funding approaches.`,
+    `<code>/stop ${coin}</code> to cancel anytime.`,
+  ].join('\n');
 }
 
 export function formatUnsubscribeMessage(coin) {
-  return `🔕 <b>Unsubscribed from ${coin}USDT.</b> Signals stopped.`;
+  return [
+    `🔕 <b>Unsubscribed from ${coin}USDT</b>`,
+    ``,
+    `Signals stopped.`,
+  ].join('\n');
 }
 
 export function formatNotFoundMessage(coin) {
-  return (
-    `❌ <b>${coin}USDT</b> not found in the spread data.\n\n` +
-    `• The coin may not be traded on 2+ exchanges.\n` +
-    `• Try <code>/ArbList</code> to browse available pairs.`
-  );
+  return [
+    `❌ <b>${coin}USDT not found</b>`,
+    ``,
+    `The coin may not be traded on 2+ exchanges.`,
+    `Try <code>/ArbList</code> to browse available pairs.`,
+  ].join('\n');
 }
 
 export function formatBotDisabledMessage() {
-  return `🔴 Bot is disabled for this chat. Send <code>/on</code> to enable.`;
+  return `⛔ Bot is disabled.  Send <code>/on</code> to enable.`;
 }
 
 export function formatAlreadySubscribedMessage(coin) {
-  return `ℹ️ Already subscribed to <b>${coin}USDT</b>. Signal timers are running.`;
+  return [
+    `ℹ️ Already subscribed to <b>${coin}USDT</b>`,
+    ``,
+    `Signal timers are running. Use <code>/status</code> to check.`,
+  ].join('\n');
 }
 
 export function formatErrorMessage(context) {
-  return `⚠️ An error occurred${context ? ` (${context})` : ''}. Please try again.`;
+  return `⚠️ Error${context ? `: ${context}` : ''}. Please try again.`;
 }
