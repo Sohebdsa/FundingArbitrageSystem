@@ -5,6 +5,7 @@ import { WebSocketServer } from 'ws';
 //library imports
 import getBinanceData from './api/Binance.js';
 import ConnectWebSocket from './ws/Binance-ws.js';
+import { startPolling as startTelegramBot } from './telegram/TelegramBot.js';
 //file imports
 
 dotenv.config();
@@ -123,6 +124,8 @@ app.post('/api/telegram/send', async (req, res) => {
 // Start server
 const server = app.listen(port, '0.0.0.0', () => {
   console.log(`Server is Listening on ${port}...`);
+  // Start Telegram bot long-polling (no-op if token is missing)
+  startTelegramBot(process.env.TELEGRAM_BOT_TOKEN);
 });
 
 // WebSocket server

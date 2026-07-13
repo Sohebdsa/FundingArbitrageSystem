@@ -9,8 +9,8 @@ const REFRESH_INTERVAL = 30_000;
 const CONFIDENCE_ORDER = { HIGH: 3, MED: 2, LOW: 1, NONE: 0 };
 const CONFIDENCE_COLORS = {
   HIGH: { color: "#00e5a0", bg: "rgba(0,229,160,0.12)", border: "rgba(0,229,160,0.3)" },
-  MED:  { color: "#f5a623", bg: "rgba(245,166,35,0.12)", border: "rgba(245,166,35,0.3)" },
-  LOW:  { color: "#3d8bff", bg: "rgba(61,139,255,0.12)", border: "rgba(61,139,255,0.3)" },
+  MED: { color: "#f5a623", bg: "rgba(245,166,35,0.12)", border: "rgba(245,166,35,0.3)" },
+  LOW: { color: "#3d8bff", bg: "rgba(61,139,255,0.12)", border: "rgba(61,139,255,0.3)" },
   NONE: { color: "#556070", bg: "rgba(85,96,112,0.10)", border: "rgba(85,96,112,0.2)" },
 };
 
@@ -109,7 +109,7 @@ function ConfBadge({ level }) {
 function FundingTimeCell({ longNext, shortNext, tick }) {
   void tick; // forces re-render every second via parent tick
   const earliest = Math.min(longNext || Infinity, shortNext || Infinity);
-  const hasData  = earliest !== Infinity && earliest > 0;
+  const hasData = earliest !== Infinity && earliest > 0;
 
   if (!hasData) {
     return <span className="arbl-fund-time arbl-fund-na">—</span>;
@@ -135,10 +135,10 @@ function FundingTimeCell({ longNext, shortNext, tick }) {
 
 // ── Exchange options ──────────────────────────────────────────────────────────
 const EXCHANGE_OPTIONS = [
-  { value: "all",     label: "All Exchanges" },
+  { value: "all", label: "All Exchanges" },
   { value: "binance", label: "Binance" },
-  { value: "bybit",   label: "Bybit" },
-  { value: "blofin",  label: "BloFin" },
+  { value: "bybit", label: "Bybit" },
+  { value: "blofin", label: "BloFin" },
 ];
 
 // ── Pagination component ──────────────────────────────────────────────────────
@@ -166,10 +166,10 @@ function Pagination({ page, total, pageSize, onChange }) {
         p === "…"
           ? <span key={`ell-${i}`} className="arbl-page-ellipsis">…</span>
           : <button
-              key={p}
-              className={`arbl-page-btn ${page === p ? "arbl-page-active" : ""}`}
-              onClick={() => onChange(p)}
-            >{p}</button>
+            key={p}
+            className={`arbl-page-btn ${page === p ? "arbl-page-active" : ""}`}
+            onClick={() => onChange(p)}
+          >{p}</button>
       )}
       <button className="arbl-page-btn" disabled={page === totalPages} onClick={() => onChange(page + 1)}>Next →</button>
     </div>
@@ -181,22 +181,22 @@ function Pagination({ page, total, pageSize, onChange }) {
 // clicks "Open in Scanner"; App.jsx handles pre-filling state + navigation.
 export default function ArbList({ onOpenInScanner }) {
   const [opportunities, setOpportunities] = useState([]);
-  const [meta, setMeta]                   = useState(null);
-  const [loading, setLoading]             = useState(true);
-  const [fetchError, setFetchError]       = useState(null);
-  const [lastUpdated, setLastUpdated]     = useState(null);
-  const [tick, setTick]                   = useState(0);
+  const [meta, setMeta] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(null);
+  const [lastUpdated, setLastUpdated] = useState(null);
+  const [tick, setTick] = useState(0);
 
   // Flash state for "Open in Scanner" button feedback
   const [flashRow, setFlashRow] = useState(null);
 
   // Filters
-  const [search,    setSearch]    = useState("");
+  const [search, setSearch] = useState("");
   const [exFilter1, setExFilter1] = useState("all");
   const [exFilter2, setExFilter2] = useState("all");
   const [minSpread, setMinSpread] = useState("");
-  const [minApy,    setMinApy]    = useState("");
-  const [confFilter,setConfFilter]= useState("all");
+  const [minApy, setMinApy] = useState("");
+  const [confFilter, setConfFilter] = useState("all");
 
   // Sort
   const [sortKey, setSortKey] = useState("spreadAbs");
@@ -297,7 +297,7 @@ export default function ArbList({ onOpenInScanner }) {
         ? a.short.exchange.localeCompare(b.short.exchange)
         : b.short.exchange.localeCompare(a.short.exchange);
     } else if (sortKey === "longRate") {
-      va = a.long.rate;  vb = b.long.rate;
+      va = a.long.rate; vb = b.long.rate;
     } else if (sortKey === "shortRate") {
       va = a.short.rate; vb = b.short.rate;
     } else if (sortKey === "nextFundingTime") {
@@ -310,12 +310,12 @@ export default function ArbList({ onOpenInScanner }) {
   });
 
   const totalItems = sorted.length;
-  const pageData   = sorted.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const pageData = sorted.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   // ── Stats bar ─────────────────────────────────────────────────────────────
   const viableCount = opportunities.filter(o => o.confidence !== "NONE").length;
-  const bestSpread  = opportunities[0]?.spreadPct ?? 0;
-  const topApy      = opportunities[0]?.annualizedApy ?? 0;
+  const bestSpread = opportunities[0]?.spreadPct ?? 0;
+  const topApy = opportunities[0]?.annualizedApy ?? 0;
 
   const handleSort = (key) => {
     if (sortKey === key) setSortDir(d => d === "asc" ? "desc" : "asc");
@@ -387,7 +387,7 @@ export default function ArbList({ onOpenInScanner }) {
             );
           })}
           <span className="arbl-ex-status-pill arbl-ex-status-total">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><path d="M12 8v4l3 3" /></svg>
             {opportunities.length} spreads computed
           </span>
         </div>
@@ -427,7 +427,7 @@ export default function ArbList({ onOpenInScanner }) {
         <div className="arbl-filter-group">
           <label className="arbl-filter-label">Search Coin</label>
           <div className="arbl-filter-input-wrap">
-            <svg className="arbl-filter-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            <svg className="arbl-filter-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" /></svg>
             <input
               className="arbl-filter-input"
               type="text"
@@ -515,20 +515,20 @@ export default function ArbList({ onOpenInScanner }) {
               <th className="arbl-th arbl-th-sortable" onClick={() => handleSort("coin")}>
                 Coin <SortIcon active={sortKey === "coin"} dir={sortDir} />
               </th>
-              <th className="arbl-th arbl-th-sortable" onClick={() => handleSort("longEx")}>
-                Long Exchange <SortIcon active={sortKey === "longEx"} dir={sortDir} />
-              </th>
-              <th className="arbl-th arbl-th-sortable" onClick={() => handleSort("shortEx")}>
-                Short Exchange <SortIcon active={sortKey === "shortEx"} dir={sortDir} />
+              <th className="arbl-th arbl-th-sortable arbl-th-spread" onClick={() => handleSort("spreadAbs")}>
+                Spread <SortIcon active={sortKey === "spreadAbs"} dir={sortDir} />
               </th>
               <th className="arbl-th arbl-th-sortable" onClick={() => handleSort("longRate")}>
                 Long Rate <SortIcon active={sortKey === "longRate"} dir={sortDir} />
               </th>
+              <th className="arbl-th arbl-th-sortable" onClick={() => handleSort("longEx")}>
+                Long Exchange <SortIcon active={sortKey === "longEx"} dir={sortDir} />
+              </th>
               <th className="arbl-th arbl-th-sortable" onClick={() => handleSort("shortRate")}>
                 Short Rate <SortIcon active={sortKey === "shortRate"} dir={sortDir} />
               </th>
-              <th className="arbl-th arbl-th-sortable arbl-th-spread" onClick={() => handleSort("spreadAbs")}>
-                Spread <SortIcon active={sortKey === "spreadAbs"} dir={sortDir} />
+              <th className="arbl-th arbl-th-sortable" onClick={() => handleSort("shortEx")}>
+                Short Exchange <SortIcon active={sortKey === "shortEx"} dir={sortDir} />
               </th>
               <th className="arbl-th arbl-th-sortable" onClick={() => handleSort("annualizedApy")}>
                 APY <SortIcon active={sortKey === "annualizedApy"} dir={sortDir} />
@@ -551,7 +551,7 @@ export default function ArbList({ onOpenInScanner }) {
                   <tr>
                     <td colSpan={11} className="arbl-empty">
                       <div className="arbl-empty-inner">
-                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" opacity="0.35"><circle cx="12" cy="12" r="10"/><path d="M8 15s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01"/></svg>
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" opacity="0.35"><circle cx="12" cy="12" r="10" /><path d="M8 15s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01" /></svg>
                         <span>No matching opportunities</span>
                         <button className="arbl-reset-btn" style={{ marginTop: "8px" }} onClick={resetFilters}>Clear Filters</button>
                       </div>
@@ -560,11 +560,11 @@ export default function ArbList({ onOpenInScanner }) {
                 )
                 : pageData.map((opp, idx) => {
                   const globalRank = (page - 1) * PAGE_SIZE + idx + 1;
-                  const longRate   = opp.long.rate;
-                  const shortRate  = opp.short.rate;
-                  const isHigh     = opp.confidence === "HIGH";
-                  const isMed      = opp.confidence === "MED";
-                  const rowKey     = `${opp.coin}-${opp.long.exchange}-${opp.short.exchange}`;
+                  const longRate = opp.long.rate;
+                  const shortRate = opp.short.rate;
+                  const isHigh = opp.confidence === "HIGH";
+                  const isMed = opp.confidence === "MED";
+                  const rowKey = `${opp.coin}-${opp.long.exchange}-${opp.short.exchange}`;
                   const isFlashing = flashRow === rowKey;
 
                   return (
@@ -581,12 +581,8 @@ export default function ArbList({ onOpenInScanner }) {
                         <span className="arbl-coin-usdt">USDT</span>
                       </td>
 
-                      <td className="arbl-td">
-                        <ExBadge exchangeId={opp.long.exchange} />
-                      </td>
-
-                      <td className="arbl-td">
-                        <ExBadge exchangeId={opp.short.exchange} />
+                      <td className="arbl-td arbl-td-spread">
+                        <span className="arbl-spread-val">{fmtSpread(opp.spreadAbs)}</span>
                       </td>
 
                       <td className="arbl-td arbl-td-rate">
@@ -594,15 +590,17 @@ export default function ArbList({ onOpenInScanner }) {
                           {fmtRate(longRate)}
                         </span>
                       </td>
+                      <td className="arbl-td">
+                        <ExBadge exchangeId={opp.long.exchange} />
+                      </td>
 
                       <td className="arbl-td arbl-td-rate">
                         <span className={shortRate >= 0 ? "arbl-rate-pos" : "arbl-rate-neg"}>
                           {fmtRate(shortRate)}
                         </span>
                       </td>
-
-                      <td className="arbl-td arbl-td-spread">
-                        <span className="arbl-spread-val">{fmtSpread(opp.spreadAbs)}</span>
+                      <td className="arbl-td">
+                        <ExBadge exchangeId={opp.short.exchange} />
                       </td>
 
                       <td className="arbl-td arbl-td-apy">
