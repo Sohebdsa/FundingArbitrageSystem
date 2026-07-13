@@ -57,9 +57,14 @@ app.get('/proxy/blofin/ticker', async (req, res) => {
 
 // ── Telegram message sender ──
 app.post('/api/telegram/send', async (req, res) => {
-  const { token, chatId, message, parseMode, silent } = req.body;
-  if (!token || !chatId || !message) {
-    return res.status(400).json({ error: 'token, chatId, and message are required' });
+  const { chatId, message, parseMode, silent } = req.body;
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+
+  if (!token) {
+    return res.status(500).json({ error: 'Telegram credentials missing', detail: 'TELEGRAM_BOT_TOKEN is not configured in the server .env file.' });
+  }
+  if (!chatId || !message) {
+    return res.status(400).json({ error: 'chatId and message are required' });
   }
 
   try {

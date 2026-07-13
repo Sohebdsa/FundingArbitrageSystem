@@ -5,6 +5,7 @@ import "./App.css";
 
 import {
   fmtRate,
+  fmtCountdown,
   computeCardSignal,
   computeArbitrageSignal,
 } from "./utils/helpers";
@@ -120,7 +121,6 @@ function App() {
   useEffect(() => {
     if (!arb) return;
 
-    const token = localStorage.getItem("tg_bot_token");
     const chatId = localStorage.getItem("tg_chat_id");
     const threshold = parseFloat(localStorage.getItem("tg_threshold") || "0.0150");
     const cooldownMin = parseFloat(localStorage.getItem("tg_cooldown") || "60");
@@ -129,7 +129,7 @@ function App() {
     const parseMode = localStorage.getItem("tg_parse_mode") || "HTML";
     const template = localStorage.getItem("tg_custom_template");
 
-    if (!token || !chatId || !template) return;
+    if (!chatId || !template) return;
 
     // Check if cooldown has elapsed
     const now = Date.now();
@@ -157,13 +157,19 @@ function App() {
       return (pct >= 0 ? "+" : "") + pct.toFixed(4) + "%";
     };
 
+    const buyEx = arb.action1 === "LONG" ? EXCHANGES[exchange1].name : EXCHANGES[exchange2].name;
+    const sellEx = arb.action1 === "SHORT" ? EXCHANGES[exchange1].name : EXCHANGES[exchange2].name;
+    const nextTime = funding1?.nextFundingTime || funding2?.nextFundingTime;
+    const timeLeft = nextTime ? fmtCountdown(nextTime) : "—";
+
     let message = template
       .replace(/{coin}/g, coin1.toUpperCase())
       .replace(/{spread}/g, spreadPct.toFixed(5))
-      .replace(/{buy_exchange}/g, arb.action1 === "LONG" ? EXCHANGES[exchange1].name : EXCHANGES[exchange2].name)
+      .replace(/{buy_exchange}/g, `🟢 <b>${buyEx}</b>`)
       .replace(/{buy_rate}/g, arb.action1 === "LONG" ? formatRateVal(arb.r1) : formatRateVal(arb.r2))
-      .replace(/{sell_exchange}/g, arb.action1 === "SHORT" ? EXCHANGES[exchange1].name : EXCHANGES[exchange2].name)
+      .replace(/{sell_exchange}/g, `🔴 <b>${sellEx}</b>`)
       .replace(/{sell_rate}/g, arb.action1 === "SHORT" ? formatRateVal(arb.r1) : formatRateVal(arb.r2))
+      .replace(/{time_left}/g, timeLeft)
       .replace(/{apy}/g, projectedApy);
 
     message = `🚨 <b>REALTIME ARB DETECTED</b>\n\n${message}`;
@@ -174,7 +180,6 @@ function App() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            token,
             chatId,
             message,
             parseMode,

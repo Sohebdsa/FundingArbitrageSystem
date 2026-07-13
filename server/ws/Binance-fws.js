@@ -64,4 +64,4 @@ function ConnectFundingWebSocket(clientWs, coin1, coin2) {
 
 }
 
-ConnectFundingWebSocket({ readyState: -1, on: () => {} }, "btc", "eth");
+ConnectFundingWebSocket({ readyState: -1, on: () => {} }, "btc", "btc");

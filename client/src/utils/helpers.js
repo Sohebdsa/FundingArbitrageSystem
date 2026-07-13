@@ -2,7 +2,20 @@
 
 export function fmtPrice(p) {
   if (!p) return "—";
-  return parseFloat(p).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const num = parseFloat(p);
+  if (isNaN(num)) return "—";
+
+  let decimals = 2;
+  if (num < 0.0001) decimals = 8;
+  else if (num < 0.01) decimals = 6;
+  else if (num < 1.0) decimals = 5;
+  else if (num < 100.0) decimals = 4;
+  else decimals = 2;
+
+  return num.toLocaleString("en-US", {
+    minimumFractionDigits: Math.min(2, decimals),
+    maximumFractionDigits: decimals
+  });
 }
 
 export function fmtRate(r) {

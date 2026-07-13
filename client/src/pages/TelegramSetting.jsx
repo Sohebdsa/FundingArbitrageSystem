@@ -2,9 +2,8 @@ import React, { useState, useEffect } from "react";
 import { BaseURL } from "../utils/baseurl";
 
 export default function TelegramSetting() {
-  const [token, setToken] = useState("");
   const [chatId, setChatId] = useState("");
-  const [threshold, setThreshold] = useState("0.0150");
+  const [threshold, setThreshold] = useState("0.3");
   const [cooldown, setCooldown] = useState("60");
   const [onlyHighConf, setOnlyHighConf] = useState(false);
   const [silentMode, setSilentMode] = useState(false);
@@ -15,32 +14,45 @@ export default function TelegramSetting() {
     "Spread: <b>{spread}%</b>\n" +
     "Buy Side: {buy_exchange} ({buy_rate})\n" +
     "Sell Side: {sell_exchange} ({sell_rate})\n" +
+    "Time Left: {time_left}" + "\n" +
     "Yield (APY): <b>~{apy}%</b>"
   );
-  
+
   const [toastMessage, setToastMessage] = useState("");
   const [alertLogs, setAlertLogs] = useState([]);
 
   // Load from localStorage on mount
   useEffect(() => {
-    const savedToken = localStorage.getItem("tg_bot_token") || "";
     const savedChatId = localStorage.getItem("tg_chat_id") || "";
     const savedThreshold = localStorage.getItem("tg_threshold") || "0.0150";
     const savedCooldown = localStorage.getItem("tg_cooldown") || "60";
     const savedOnlyHighConf = localStorage.getItem("tg_only_high_conf") === "true";
     const savedSilentMode = localStorage.getItem("tg_silent_mode") === "true";
     const savedParseMode = localStorage.getItem("tg_parse_mode") || "HTML";
-    const savedTemplate = localStorage.getItem("tg_custom_template") || "";
+    let savedTemplate = localStorage.getItem("tg_custom_template") || "";
     const savedLogs = JSON.parse(localStorage.getItem("tg_alert_logs") || "[]");
 
-    setToken(savedToken);
+    // Auto-migration to append {time_left} to existing saved template if missing
+    if (savedTemplate && !savedTemplate.includes("{time_left}")) {
+      savedTemplate = savedTemplate.replace(
+        "Yield (APY):",
+        "Time Left: {time_left}\nYield (APY):"
+      );
+      localStorage.setItem("tg_custom_template", savedTemplate);
+    }
+
     setChatId(savedChatId);
     setThreshold(savedThreshold);
     setCooldown(savedCooldown);
     setOnlyHighConf(savedOnlyHighConf);
     setSilentMode(savedSilentMode);
     setParseMode(savedParseMode);
-    if (savedTemplate) setCustomTemplate(savedTemplate);
+    if (savedTemplate) {
+      setCustomTemplate(savedTemplate);
+    } else {
+      // If no custom template is saved, default to the initial state
+      localStorage.setItem("tg_custom_template", customTemplate);
+    }
     setAlertLogs(savedLogs);
   }, []);
 
@@ -53,7 +65,6 @@ export default function TelegramSetting() {
 
   const handleSave = (e) => {
     if (e) e.preventDefault();
-    localStorage.setItem("tg_bot_token", token);
     localStorage.setItem("tg_chat_id", chatId);
     localStorage.setItem("tg_threshold", threshold);
     localStorage.setItem("tg_cooldown", cooldown);
@@ -61,13 +72,13 @@ export default function TelegramSetting() {
     localStorage.setItem("tg_silent_mode", silentMode ? "true" : "false");
     localStorage.setItem("tg_parse_mode", parseMode);
     localStorage.setItem("tg_custom_template", customTemplate);
-    
+
     showToast("✓ Telegram configurations saved to LocalStorage.");
   };
 
   const handleTest = async () => {
-    if (!token || !chatId) {
-      showToast("❌ Set Bot Token and Chat ID to send test message.");
+    if (!chatId) {
+      showToast("❌ Set Chat ID to send test message.");
       return;
     }
 
@@ -75,27 +86,27 @@ export default function TelegramSetting() {
     handleSave();
 
     const timestamp = new Date().toLocaleTimeString();
-    
+
     // Generate a mock message using the template
     let message = customTemplate
       .replace(/{coin}/g, "BTC")
       .replace(/{spread}/g, "0.0385")
-      .replace(/{buy_exchange}/g, "Bybit")
+      .replace(/{buy_exchange}/g, "🟢 <b>Bybit</b>")
       .replace(/{buy_rate}/g, "-0.0125%")
-      .replace(/{sell_exchange}/g, "Binance")
+      .replace(/{sell_exchange}/g, "🔴 <b>Binance</b>")
       .replace(/{sell_rate}/g, "+0.0260%")
+      .replace(/{time_left}/g, "07h 45m 12s")
       .replace(/{apy}/g, "42.15");
 
     message = `🔔 <b>TEST ALERT MESSAGE</b>\n\n${message}`;
 
     try {
       showToast("⚡ Dispatching Telegram test alert...");
-      
+
       const response = await fetch(`${BaseURL}api/telegram/send`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          token,
           chatId,
           message,
           parseMode,
@@ -116,11 +127,11 @@ export default function TelegramSetting() {
         setAlertLogs(updatedLogs);
         localStorage.setItem("tg_alert_logs", JSON.stringify(updatedLogs));
       } else {
-        showToast(`❌ Error: ${data.detail || "Upstream Telegram rejected command"}`);
+        showToast(`❌ Error: ${data.detail || data.error || "Upstream Telegram rejected command"}`);
         const newLog = {
           time: timestamp,
           status: "ERROR",
-          details: data.detail || "Failed to deliver. Validate Token/Chat ID."
+          details: data.detail || data.error || "Failed to deliver. Validate Chat ID."
         };
         const updatedLogs = [newLog, ...alertLogs].slice(0, 50);
         setAlertLogs(updatedLogs);
@@ -159,7 +170,7 @@ export default function TelegramSetting() {
 
       <div className="premium-card calc-grid">
         <div className="premium-card-accent" />
-        
+
         {/* Form panel */}
         <div>
           <h2 className="calc-section-title">
@@ -171,18 +182,6 @@ export default function TelegramSetting() {
           </h2>
 
           <form onSubmit={(e) => { e.preventDefault(); handleSave(); }} className="calc-form">
-            <div className="calc-input-group">
-              <label className="calc-label">Telegram Bot Token</label>
-              <div className="calc-input-wrapper">
-                <input
-                  type="password"
-                  placeholder="e.g. 581903028:AAFz..."
-                  value={token}
-                  onChange={(e) => setToken(e.target.value)}
-                />
-              </div>
-            </div>
-
             <div className="calc-input-group">
               <label className="calc-label">Target Chat / Channel ID</label>
               <div className="calc-input-wrapper">
