@@ -2,3 +2,9 @@ client/node_modules
 server/node_modules
 server/package-lock.json
 .env
+
+ARB_LIST_PAGE.
+ARCHITECTURE.md 
+BEST_SPREAD_SERVICE.md
+KNOWLEDGE_GRAPH.md
+TELEGRAM_BOT.md
