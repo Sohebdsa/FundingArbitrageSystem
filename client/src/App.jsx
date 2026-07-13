@@ -216,6 +216,20 @@ function App() {
     if (c2) setCoin2(c2);
   };
 
+  // ── Open-in-Scanner from ArbList ──
+  // Pre-fills both cards and navigates to the arb scanner page.
+  const handleOpenInScanner = useCallback(({ coin, longExchange, shortExchange }) => {
+    const c = coin.toLowerCase().replace(/usdt$/, "");
+    // Card 1 = long side, Card 2 = short side
+    setInputCoin1(c);  setCoin1(c);
+    setInputCoin2(c);  setCoin2(c);
+    setExchange1(longExchange);
+    setExchange2(shortExchange);
+    setFunding1(null);
+    setFunding2(null);
+    setCurrentPage("arb-scanner");
+  }, []);
+
   const ex1 = EXCHANGES[exchange1];
   const ex2 = EXCHANGES[exchange2];
 
@@ -516,7 +530,7 @@ function App() {
           </>
         )}
 
-        {currentPage === "arb-list" && <ArbList />}
+        {currentPage === "arb-list" && <ArbList onOpenInScanner={handleOpenInScanner} />}
         {currentPage === "calculate-apy" && <CalculateApy />}
         {currentPage === "telegram-setting" && <TelegramSetting />}
         {currentPage === "execution-engine" && <ExecutionEngine />}

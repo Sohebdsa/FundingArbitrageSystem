@@ -2810,3 +2810,120 @@ body {
   }
 }
 
+/* ── Next Funding Time column ────────────────────────────────────── */
+.arbl-th-funding {
+  color: rgba(61,139,255,0.9);
+  white-space: nowrap;
+}
+
+.arbl-td-funding {
+  vertical-align: middle;
+}
+
+.arbl-fund-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.arbl-fund-time {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.arbl-fund-na {
+  color: var(--text-dim);
+  font-family: var(--mono);
+  font-size: 12px;
+}
+
+/* Urgency levels */
+.arbl-fund-urgent {
+  color: #ff4757;
+  font-weight: 700;
+}
+
+.arbl-fund-soon {
+  color: #f5a623;
+}
+
+.arbl-fund-now {
+  color: #00e5a0;
+  font-weight: 700;
+  animation: arbl-fund-blink 1s ease-in-out infinite;
+}
+
+@keyframes arbl-fund-blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+
+.arbl-fund-side-label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0;
+  background: var(--surface2);
+  color: var(--text-dim);
+  flex-shrink: 0;
+}
+
+/* ── Open in Scanner button ──────────────────────────────────────── */
+.arbl-th-action {
+  text-align: center;
+  width: 72px;
+}
+
+.arbl-td-action {
+  text-align: center;
+  padding: 8px 10px;
+}
+
+.arbl-open-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 10px;
+  background: rgba(61,139,255,0.09);
+  border: 1px solid rgba(61,139,255,0.3);
+  border-radius: 7px;
+  color: var(--blue);
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.1s;
+  line-height: 1;
+}
+
+.arbl-open-btn:hover {
+  background: rgba(61,139,255,0.2);
+  border-color: rgba(61,139,255,0.55);
+  color: #6ea8fe;
+  transform: translateY(-1px);
+}
+
+.arbl-open-btn:active {
+  transform: translateY(0);
+}
+
+/* ── Row flash feedback when Scan is clicked ─────────────────────── */
+.arbl-row--flash {
+  animation: arbl-row-flash 0.7s ease-out;
+}
+
+@keyframes arbl-row-flash {
+  0%   { background: rgba(61,139,255,0.18); }
+  100% { background: transparent; }
+}

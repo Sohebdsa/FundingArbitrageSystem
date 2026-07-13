@@ -181,13 +181,20 @@ export function buildSpreadOpportunities(ratesByExchange, opts = {}) {
             rate: shortRD.lastFundingRate,
             markPrice: shortRD.markPrice,
             symbol: shortRD.symbol,
+            nextFundingTime: shortRD.nextFundingTime,
           },
           long: {
             exchange: longRD.exchange,
             rate: longRD.lastFundingRate,
             markPrice: longRD.markPrice,
             symbol: longRD.symbol,
+            nextFundingTime: longRD.nextFundingTime,
           },
+          // Earliest funding event of the pair
+          nextFundingTime: Math.min(
+            shortRD.nextFundingTime || Infinity,
+            longRD.nextFundingTime || Infinity
+          ) || 0,
           timestamp: Date.now(),
         });
       }
