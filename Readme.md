@@ -1,6 +1,6 @@
 # ⚡ Funding Arbitrage System
 
-> A professional-grade, multi-exchange perpetual futures monitor, calculator, and alert engine. The system tracks live tick prices and funding rates across Binance, Bybit, and BloFin, computes pairwise arbitrage spreads, estimates yield, and pushes automated, adaptive signals directly to Telegram.
+> A professional-grade, multi-exchange perpetual futures monitor, calculator, and alert engine. The system tracks live tick prices and funding rates across Binance, Bybit, and BloFin, computes pairwise arbitrage spreads, estimates yield, and pushes automated, adaptive signals directly to Telegram.. 
 
 ---
 
